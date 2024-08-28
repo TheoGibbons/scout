@@ -4,7 +4,7 @@ namespace Laravel\Scout;
 
 use Algolia\AlgoliaSearch\Config\SearchConfig;
 use Algolia\AlgoliaSearch\Api\SearchClient as Algolia;
-use Algolia\AlgoliaSearch\Support\UserAgent;
+use Algolia\AlgoliaSearch\Support\AlgoliaAgent;
 use Exception;
 use Illuminate\Support\Manager;
 use Laravel\Scout\Engines\AlgoliaEngine;
