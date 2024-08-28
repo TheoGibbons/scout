@@ -35,8 +35,7 @@ class AlgoliaEngineTest extends TestCase
     public function test_update_adds_objects_to_index()
     {
         $client = m::mock(SearchClient::class);
-        $client->shouldReceive('searchSingleIndex')->with('table', ['query' => ''])->andReturn($index = m::mock(stdClass::class));
-        $index->shouldReceive('saveObjects')->with([[
+        $client->shouldReceive('saveObjects')->with('table', [[
             'id' => 1,
             'objectID' => 1,
         ]]);
@@ -48,8 +47,7 @@ class AlgoliaEngineTest extends TestCase
     public function test_delete_removes_objects_to_index()
     {
         $client = m::mock(SearchClient::class);
-        $client->shouldReceive('searchSingleIndex')->with('table', ['query' => ''])->andReturn($index = m::mock(stdClass::class));
-        $index->shouldReceive('deleteObjects')->with([1]);
+        $client->shouldReceive('deleteObjects')->with('table', [1]);
 
         $engine = new AlgoliaEngine($client);
         $engine->delete(Collection::make([new SearchableModel(['id' => 1])]));
@@ -58,8 +56,7 @@ class AlgoliaEngineTest extends TestCase
     public function test_delete_removes_objects_to_index_with_a_custom_search_key()
     {
         $client = m::mock(SearchClient::class);
-        $client->shouldReceive('searchSingleIndex')->with('table', ['query' => ''])->andReturn($index = m::mock(Indexes::class));
-        $index->shouldReceive('deleteObjects')->once()->with(['my-algolia-key.5']);
+        $client->shouldReceive('deleteObjects')->once()->with('table', ['my-algolia-key.5']);
 
         $engine = new AlgoliaEngine($client);
         $engine->delete(Collection::make([new AlgoliaCustomKeySearchableModel(['id' => 5])]));
@@ -74,8 +71,7 @@ class AlgoliaEngineTest extends TestCase
         $job = unserialize(serialize($job));
 
         $client = m::mock(SearchClient::class);
-        $client->shouldReceive('searchSingleIndex')->with('table', ['query' => ''])->andReturn($index = m::mock(stdClass::class));
-        $index->shouldReceive('deleteObjects')->once()->with(['my-algolia-key.5']);
+        $client->shouldReceive('deleteObjects')->once()->with('table', ['my-algolia-key.5']);
 
         $engine = new AlgoliaEngine($client);
         $engine->delete($job->models);
@@ -111,7 +107,10 @@ class AlgoliaEngineTest extends TestCase
     public function test_search_sends_correct_parameters_to_algolia()
     {
         $client = m::mock(SearchClient::class);
-        $client->shouldReceive('searchSingleIndex')->with('table', ['query' => 'zonda', 'numericFilters' => ['foo=1']])->andReturn($index = m::mock(stdClass::class));
+        $client->shouldReceive('searchSingleIndex')->with('table', [
+            'query' => 'zonda',
+            'numericFilters' => ['foo=1'],
+        ]);
 
         $engine = new AlgoliaEngine($client);
         $builder = new Builder(new SearchableModel, 'zonda');
@@ -122,7 +121,10 @@ class AlgoliaEngineTest extends TestCase
     public function test_search_sends_correct_parameters_to_algolia_for_where_in_search()
     {
         $client = m::mock(SearchClient::class);
-        $client->shouldReceive('searchSingleIndex')->with('table', ['query' => 'zonda', 'numericFilters' => ['foo=1', ['bar=1', 'bar=2']]])->andReturn($index = m::mock(stdClass::class));
+        $client->shouldReceive('searchSingleIndex')->with('table', [
+            'query' => 'zonda',
+            'numericFilters' => ['foo=1', ['bar=1', 'bar=2']],
+        ]);
 
         $engine = new AlgoliaEngine($client);
         $builder = new Builder(new SearchableModel, 'zonda');
@@ -133,7 +135,10 @@ class AlgoliaEngineTest extends TestCase
     public function test_search_sends_correct_parameters_to_algolia_for_empty_where_in_search()
     {
         $client = m::mock(SearchClient::class);
-        $client->shouldReceive('searchSingleIndex')->with('table', ['query' => 'zonda', 'numericFilters' => ['foo=1', '0=1']])->andReturn($index = m::mock(stdClass::class));
+        $client->shouldReceive('searchSingleIndex')->with('table', [
+            'query' => 'zonda',
+            'numericFilters' => ['foo=1', '0=1'],
+        ]);
 
         $engine = new AlgoliaEngine($client);
         $builder = new Builder(new SearchableModel, 'zonda');
@@ -258,8 +263,7 @@ class AlgoliaEngineTest extends TestCase
     public function test_a_model_is_indexed_with_a_custom_algolia_key()
     {
         $client = m::mock(SearchClient::class);
-        $client->shouldReceive('searchSingleIndex')->with('table', ['query' => ''])->andReturn($index = m::mock(stdClass::class));
-        $index->shouldReceive('saveObjects')->with([[
+        $client->shouldReceive('saveObjects')->with('table', [[
             'id' => 1,
             'objectID' => 'my-algolia-key.1',
         ]]);
@@ -271,8 +275,7 @@ class AlgoliaEngineTest extends TestCase
     public function test_a_model_is_removed_with_a_custom_algolia_key()
     {
         $client = m::mock(SearchClient::class);
-        $client->shouldReceive('searchSingleIndex')->with('table', ['query' => ''])->andReturn($index = m::mock(stdClass::class));
-        $index->shouldReceive('deleteObjects')->with(['my-algolia-key.1']);
+        $client->shouldReceive('deleteObjects')->with('table', ['my-algolia-key.1']);
 
         $engine = new AlgoliaEngine($client);
         $engine->delete(Collection::make([new AlgoliaCustomKeySearchableModel(['id' => 1])]));
@@ -281,8 +284,7 @@ class AlgoliaEngineTest extends TestCase
     public function test_flush_a_model_with_a_custom_algolia_key()
     {
         $client = m::mock(SearchClient::class);
-        $client->shouldReceive('searchSingleIndex')->with('table', ['query' => ''])->andReturn($index = m::mock(stdClass::class));
-        $index->shouldReceive('clearObjects');
+        $client->shouldReceive('clearObjects')->with('table');
 
         $engine = new AlgoliaEngine($client);
         $engine->flush(new AlgoliaCustomKeySearchableModel);
@@ -291,8 +293,7 @@ class AlgoliaEngineTest extends TestCase
     public function test_update_empty_searchable_array_does_not_add_objects_to_index()
     {
         $client = m::mock(SearchClient::class);
-        $client->shouldReceive('searchSingleIndex')->with('table', ['query' => ''])->andReturn($index = m::mock(stdClass::class));
-        $index->shouldNotReceive('saveObjects');
+        $client->shouldNotReceive('saveObjects');
 
         $engine = new AlgoliaEngine($client);
         $engine->update(Collection::make([new EmptySearchableModel]));
@@ -301,8 +302,7 @@ class AlgoliaEngineTest extends TestCase
     public function test_update_empty_searchable_array_from_soft_deleted_model_does_not_add_objects_to_index()
     {
         $client = m::mock(SearchClient::class);
-        $client->shouldReceive('searchSingleIndex')->with('table', ['query' => ''])->andReturn($index = m::mock('StdClass'));
-        $index->shouldNotReceive('saveObjects');
+        $client->shouldNotReceive('saveObjects');
 
         $engine = new AlgoliaEngine($client, true);
         $engine->update(Collection::make([new SoftDeletedEmptySearchableModel]));
