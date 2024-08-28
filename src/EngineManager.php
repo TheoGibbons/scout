@@ -2,7 +2,7 @@
 
 namespace Laravel\Scout;
 
-use Algolia\AlgoliaSearch\Config\SearchConfig;
+use Algolia\AlgoliaSearch\Configuration\SearchConfig;
 use Algolia\AlgoliaSearch\Api\SearchClient as Algolia;
 use Algolia\AlgoliaSearch\Support\AlgoliaAgent;
 use Exception;
