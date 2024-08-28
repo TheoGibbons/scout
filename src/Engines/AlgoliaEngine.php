@@ -2,7 +2,7 @@
 
 namespace Laravel\Scout\Engines;
 
-use Algolia\AlgoliaSearch\SearchClient as Algolia;
+use Algolia\AlgoliaSearch\Api\SearchClient as Algolia;
 use Exception;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\LazyCollection;
@@ -14,7 +14,7 @@ class AlgoliaEngine extends Engine
     /**
      * The Algolia client.
      *
-     * @var \Algolia\AlgoliaSearch\SearchClient
+     * @var \Algolia\AlgoliaSearch\Api\SearchClient
      */
     protected $algolia;
 
@@ -28,7 +28,7 @@ class AlgoliaEngine extends Engine
     /**
      * Create a new engine instance.
      *
-     * @param  \Algolia\AlgoliaSearch\SearchClient  $algolia
+     * @param  \Algolia\AlgoliaSearch\Api\SearchClient  $algolia
      * @param  bool  $softDelete
      * @return void
      */
