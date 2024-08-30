@@ -70,7 +70,7 @@ class AlgoliaEngine extends Engine
             );
         })->filter()->values()->all();
 
-        if (!empty($objects)) {
+        if (! empty($objects)) {
             $this->algolia->saveObjects($indexName, $objects);
         }
     }
