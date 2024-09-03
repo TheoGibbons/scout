@@ -2,6 +2,23 @@
 
 ## Upgrading To 11.0 From 10.x
 
+### Algolia Engine V4 Support
+
+In Scout 11.x, the Algolia engine has been updated to support Algolia V4. As a result, support for Algolia V3 has been removed, making this a breaking change. If you are currently using Algolia V3, you will need to upgrade to V4 to continue using the Algolia engine in Scout.
+
+#### Key Changes:
+- Removed support for Algolia V3.
+- Added support for Algolia V4.
+- PHP 8.1 or higher is required for compatibility with Algolia V4.
+
+To use Algolia V4, you must update your `composer.json` file to include the following dependency:
+
+```json
+"algolia/algoliasearch-client-php": "^4.3"
+```
+
+Please review these changes carefully and ensure your application is compatible with the new requirements before upgrading.
+
 ### Algolia Engine `filters`
 
 PR: https://github.com/laravel/scout/pull/839
