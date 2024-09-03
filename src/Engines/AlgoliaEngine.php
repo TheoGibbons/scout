@@ -2,7 +2,7 @@
 
 namespace Laravel\Scout\Engines;
 
-use Algolia\AlgoliaSearch\SearchClient as Algolia;
+use Algolia\AlgoliaSearch\Api\SearchClient as Algolia;
 use Exception;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\LazyCollection;
@@ -14,7 +14,7 @@ class AlgoliaEngine extends Engine
     /**
      * The Algolia client.
      *
-     * @var \Algolia\AlgoliaSearch\SearchClient
+     * @var \Algolia\AlgoliaSearch\Api\SearchClient
      */
     protected $algolia;
 
@@ -28,7 +28,7 @@ class AlgoliaEngine extends Engine
     /**
      * Create a new engine instance.
      *
-     * @param  \Algolia\AlgoliaSearch\SearchClient  $algolia
+     * @param  \Algolia\AlgoliaSearch\Api\SearchClient  $algolia
      * @param  bool  $softDelete
      * @return void
      */
@@ -52,7 +52,7 @@ class AlgoliaEngine extends Engine
             return;
         }
 
-        $index = $this->algolia->initIndex($models->first()->indexableAs());
+        $indexName = $models->first()->indexableAs();
 
         if ($this->usesSoftDelete($models->first()) && $this->softDelete) {
             $models->each->pushSoftDeleteMetadata();
@@ -60,18 +60,18 @@ class AlgoliaEngine extends Engine
 
         $objects = $models->map(function ($model) {
             if (empty($searchableData = $model->toSearchableArray())) {
-                return;
+                return null;
             }
 
             return array_merge(
                 $searchableData,
                 $model->scoutMetadata(),
-                ['objectID' => $model->getScoutKey()],
+                ['objectID' => $model->getScoutKey()]
             );
         })->filter()->values()->all();
 
         if (! empty($objects)) {
-            $index->saveObjects($objects);
+            $this->algolia->saveObjects($indexName, $objects);
         }
     }
 
@@ -87,13 +87,13 @@ class AlgoliaEngine extends Engine
             return;
         }
 
-        $index = $this->algolia->initIndex($models->first()->indexableAs());
+        $indexName = $models->first()->indexableAs();
 
         $keys = $models instanceof RemoveableScoutCollection
             ? $models->pluck($models->first()->getScoutKeyName())
             : $models->map->getScoutKey();
 
-        $index->deleteObjects($keys->all());
+        $this->algolia->deleteObjects($indexName, $keys->all());
     }
 
     /**
@@ -136,22 +136,20 @@ class AlgoliaEngine extends Engine
      */
     protected function performSearch(Builder $builder, array $options = [])
     {
-        $algolia = $this->algolia->initIndex(
-            $builder->index ?: $builder->model->searchableAs()
-        );
+        $indexName = $builder->index ?: $builder->model->searchableAs();
 
         $options = array_merge($builder->options, $options);
 
         if ($builder->callback) {
             return call_user_func(
                 $builder->callback,
-                $algolia,
+                $this->algolia,
                 $builder->query,
                 $options
             );
         }
 
-        return $algolia->search($builder->query, $options);
+        return $this->algolia->searchSingleIndex($indexName, array_merge(['query' => $builder->query], $options));
     }
 
     /**
@@ -280,9 +278,9 @@ class AlgoliaEngine extends Engine
      */
     public function flush($model)
     {
-        $index = $this->algolia->initIndex($model->indexableAs());
+        $indexName = $model->indexableAs();
 
-        $index->clearObjects();
+        $this->algolia->clearObjects($indexName);
     }
 
     /**
@@ -307,7 +305,7 @@ class AlgoliaEngine extends Engine
      */
     public function deleteIndex($name)
     {
-        return $this->algolia->initIndex($name)->delete();
+        return $this->algolia->deleteIndex($name);
     }
 
     /**
